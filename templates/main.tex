@@ -1,0 +1,86 @@
+% An extension of article to include 17pt font size
+\documentclass[10pt]{extarticle}
+\usepackage[]{layout}
+\setlength{\textwidth}{16cm}
+\setlength{\textheight}{24cm}
+
+\usepackage[T1]{fontenc}
+
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+% \usepackage[helvet]{sfmath}
+% \everymath={\sf}
+
+\usepackage{parskip}
+
+\usepackage[english]{babel}	
+\usepackage[left=2cm, right=2cm, top=2cm, bottom=2cm]{geometry}
+
+ % Math packages
+\usepackage{amsmath,amsfonts,amsthm}
+
+\usepackage[pdftex]{graphicx}	
+
+% For hyphenation of texttt:
+% https://tex.stackexchange.com/questions/299/how-to-get-long-texttt-sections-to-break
+\usepackage[htt]{hyphenat}
+
+% For syntax highlighting
+% Modified by tqts to allow multipage listings, and breaks for long lines
+\usepackage{minted}
+\setminted[]{frame=single,fontsize=\small,samepage=true,breaklines=true,breakanywhere}
+
+% Allow latex to play around with space stretching to prevent texttt's overflowing the page width
+\setlength\emergencystretch{3cm}
+
+\usepackage{xcolor}
+\definecolor{spearbitlink}{HTML}{000066}
+
+% For links
+\usepackage[hyphens]{url}
+\PassOptionsToPackage{hyphens}{url}\usepackage[hidelinks = true, colorlinks = true, linkcolor = black, urlcolor = spearbitlink]{hyperref}
+
+% Fixing a pandoc related error
+% https://tex.stackexchange.com/questions/257418/error-tightlist-converting-md-file-into-pdf-using-pandoc
+\def\tightlist{}
+
+% This allows using \Needspace{distance} to avoid subsections to start near the bottom of the page
+\usepackage{needspace}
+
+\usepackage{longtable}
+\usepackage{booktabs}
+
+% Adding breaklines=true to minted's settings seems to produce some errors related to fonts. This is
+% the only fix that worked.
+% https://stackoverflow.com/questions/70075331/pdflatex-file-cmss10-t3-cannot-open-type-1-font-file-for-read
+
+\pdfmapfile{-mpfonts.map}
+
+% Workaround for red boxes around @-signs in minted environments
+% https://tex.stackexchange.com/questions/343494/minted-red-box-around-greek-characters
+\makeatletter
+\AtBeginEnvironment{minted}{\dontdofcolorbox}
+\def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
+\makeatother
+
+% REPORT FORMAT:
+\begin{document}
+
+    \input{title.tex}
+    \clearpage
+
+    \tableofcontents
+    \clearpage
+
+    \input{pre_report.tex}
+
+    \input{summary.tex}
+    \clearpage
+
+    \section{Findings}
+    \input{report.tex}
+    \clearpage 
+
+    \input{post_report.tex}
+
+\end{document}

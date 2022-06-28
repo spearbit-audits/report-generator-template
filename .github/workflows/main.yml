@@ -1,0 +1,55 @@
+name: Generate PDF report
+
+on:
+  push:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Initial greeting
+        run: echo "Report generation started, triggered by a ${{ github.event_name }} event."
+      
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Install pandocfilters
+        run: pip install pandocfilters
+      - name: Install pandoc
+        run: sudo apt-get install pandoc
+      - name: Generate the report
+        run: |
+          cd $GITHUB_WORKSPACE
+          chmod a+x ./scripts/*
+          python3 generate_report.py
+          
+      - name: Compile the LaTeX file
+        continue-on-error: true
+        uses: dante-ev/latex-action@latest
+        with:
+          working_directory: working
+          root_file: main.tex
+          compiler: pdflatex
+          args: -interaction=nonstopmode -shell-escape
+      - name: Compile the LaTeX file (again, for references)
+        continue-on-error: true
+        uses: dante-ev/latex-action@latest
+        with:
+          working_directory: working
+          root_file: main.tex
+          compiler: pdflatex
+          args: -interaction=nonstopmode -shell-escape
+          
+      - name: Upload the report PDF
+        uses: actions/upload-artifact@v2
+        with:
+          name: report.pdf
+          path: ./working/main.pdf
+          
+      - name: Final greeting, job status
+        run: echo "Job finished. Status ${{ job.status }}."

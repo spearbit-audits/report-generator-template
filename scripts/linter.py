@@ -33,11 +33,14 @@ def lint(report, reviewName):
             (line.startswith("**Recommendation:**") and len(line) < len("**Recommendation:**") + 5) or
             (line.startswith("**" + reviewName + ":**") and len(line) < len("**" + reviewName + ":**") + 5)):
             
-            # There might be more than one empty lines following the header, remove them
-            while report[lineNumber + 1] == "":
+           # There might be more than one empty lines following the header, remove them
+            while lineNumber + 1 < len(report):
+                if report[lineNumber + 1] != "": break
                 del report[lineNumber + 1]
+                
 
-            nextLine = report[lineNumber + 1]
+            # if next line is out of range then stop
+            if lineNumber + 1 >= len(report): break
             # If it's a list, code or quote, don't merge
             if (not nextLine.lstrip().startswith("-") and 
                 not nextLine.lstrip().startswith("1.") and 

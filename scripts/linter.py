@@ -41,6 +41,9 @@ def lint(report, reviewName):
 
             # if next line is out of range then stop
             if lineNumber + 1 >= len(report): break
+
+            nextLine = report[lineNumber + 1]
+            
             # If it's a list, code or quote, don't merge
             if (not nextLine.lstrip().startswith("-") and 
                 not nextLine.lstrip().startswith("1.") and 

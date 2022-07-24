@@ -39,8 +39,8 @@ Check contents and **manually update** the following files in `source/`:
 - `introduction.md`: Information about the project and the review process.
 - `spearbit_description.md`: Spearbit description.
 - `repositories.md`: The repository and commit hash used for the review.
-- `additional_comments.md`: For extra information at the end of the report. It is commented by DEFAULT, plase change if required.
-- `appendix.md`: For extra information at the end of the report. It is commented by DEFAULT, plase change if required.
+- `additional_comments.md`: For extra information at the end of the report. It is commented by DEFAULT, please change if required.
+- `appendix.md`: For extra information at the end of the report. It is commented by DEFAULT, please change if required.
 
 All `.md` files can be formatted and will be converted to LaTeX by the scripts located in `scripts/`.
 

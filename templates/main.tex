@@ -15,6 +15,7 @@
 
 \usepackage[english]{babel}	
 \usepackage[left=2cm, right=2cm, top=2cm, bottom=2cm]{geometry}
+\usepackage{afterpage}
 
  % Math packages
 \usepackage{amsmath,amsfonts,amsthm}
@@ -34,11 +35,11 @@
 \setlength\emergencystretch{3cm}
 
 \usepackage{xcolor}
-\definecolor{spearbitlink}{HTML}{000066}
+\definecolor{cyfrinlink}{HTML}{2580C3}
 
 % For links
 \usepackage[hyphens]{url}
-\PassOptionsToPackage{hyphens}{url}\usepackage[hidelinks = true, colorlinks = true, linkcolor = black, urlcolor = spearbitlink]{hyperref}
+\PassOptionsToPackage{hyphens}{url}\usepackage[hidelinks = true, colorlinks = true, linkcolor = black, urlcolor = cyfrinlink]{hyperref}
 
 % Fixing a pandoc related error
 % https://tex.stackexchange.com/questions/257418/error-tightlist-converting-md-file-into-pdf-using-pandoc
@@ -49,6 +50,7 @@
 
 \usepackage{longtable}
 \usepackage{booktabs}
+\usepackage{caption}
 
 % Adding breaklines=true to minted's settings seems to produce some errors related to fonts. This is
 % the only fix that worked.
@@ -62,6 +64,10 @@
 \AtBeginEnvironment{minted}{\dontdofcolorbox}
 \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
 \makeatother
+
+% Increase table row height and make table border thickness consistent
+\renewcommand{\arraystretch}{1.5}
+\setlength{\arrayrulewidth}{0.75pt}
 
 % REPORT FORMAT:
 \begin{document}

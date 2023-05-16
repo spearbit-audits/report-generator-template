@@ -84,6 +84,9 @@ acs-*.bib
 # endnotes
 *.ent
 
+# env
+.env
+
 # fixme
 *.lox
 

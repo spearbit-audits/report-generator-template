@@ -1,47 +1,73 @@
+\newlength{\logoWidth}
+\setlength{\logoWidth}{0.6\textwidth}
+
 \begin{titlepage}
   \vbox{}
   \vbox{}
 
   \begin{center}
-
-    \includegraphics[width=0.75\textwidth]{img/spearbit_wordmark_black.png}
-    \vspace{5cm}
+  
+    % Check if the page has more content than can fit on a single page
+    \ifdim\pagegoal>\maxdimen
+      % Apply adjustments for multiple pages
+      \vspace*{2cm} % Adjust the vertical spacing as needed
+      \noindent\makebox[\linewidth]{\rule{.7\paperwidth}{.6pt}}\\[0.7cm]
+      {\huge \bfseries Summary of Findings}\\
+      \noindent\makebox[\linewidth]{\rule{.7\paperwidth}{.6pt}}\\[0.7cm]
+      \normalsize % Restore the text size
+      
+      \includegraphics[width=\logoWidth]{img/cyfrin-logo.png} % Adjust the graphic size as needed
+      
+      \vfill
+      \else
+      % Apply adjustments for single page
+      \vfill
+      
+      \includegraphics[scale=0.25]{img/cyfrin-logo.png} % Adjust the graphic size as needed
+      
+      \vfill
+    \fi
 
     % Title
     \noindent\makebox[\linewidth]{\rule{.7\paperwidth}{.6pt}}\\[0.7cm]
 
-    { \huge \bfseries
-
-      __PLACEHOLDER__PROJECT_NAME Security Review
+    {\huge \bfseries
+      __PLACEHOLDER__PROJECT_NAME Audit Report
     }\\[0.25cm]
     
     \noindent\makebox[\linewidth]{\rule{.7\paperwidth}{.6pt}}\\[0.7cm]
 
-    % If subtitle is needed
-    % \large{Engagement II
-    % }\\[1.2 cm]
+    \large
+    Prepared by \href{https://cyfrin.io}{Cyfrin}
+
+    \large{
+      Version 1.0
+    }\\[1.2cm]
     
     \vfill
 
-
-    % Who are the auditors:
-    \Large
-    {\bfseries Auditors}\\
+    % Who are the lead auditors:
+    \large
+    {\bfseries Lead Auditors}\\
 
     \vspace{0.2cm}
-    \input{reviewers.tex}
+    \input{lead_auditors.tex}\\
     \vspace{1cm}
 
 
-    % Who prepared the report:
-    \normalsize
-    {\bfseries Report prepared by:} \input{copywriters.tex}\\
+    % Who are the assisting auditors:
+    \large
+    {\bfseries Assisting Auditors}\\
+
+    \vspace{0.2cm}
+    \input{assisting_auditors.tex}\\
     \vspace{1cm}
 
+    \bigbreak
+    \vfill
+    
     % Date of when the report was generated:
     {\normalsize \today}
-
-
 
   \end{center}
 

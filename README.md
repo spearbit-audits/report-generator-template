@@ -1,13 +1,5 @@
 # A Markdown based template for writing audit reports
-
-## Dependencies
-
-1. [Pandoc](https://pandoc.org/)
-2. [Pandocfilters](https://github.com/jgm/pandocfilters): `pip install pandocfilters`.
-3. [LaTeX toolchain](https://www.latex-project.org/get/). We recommend a full install of LaTeX (installing individual `.sty` files are hard).
-4. [Pygments](https://pygments.org/): `pip install pygments`.
-5. [PyGithub](https://pypi.org/project/PyGithub/): `pip install pygithub`
-6. bash
+Forked from [Spearbit](https://github.com/spearbit-audits/report-generator-template).
 
 ## Introduction
 
@@ -34,11 +26,11 @@ There are five directories:
 Check contents and **manually update** the following files in `source/`:
 
 - `summary_information.conf`: Information to be replaced in the title page and the summary.
-- `reviewers.md`: List of auditors who participated during the engagement.
-- `copywriters.md` : List of people who prepared the report.
-- `introduction.md`: Information about the project and the review process.
-- `spearbit_description.md`: Spearbit description.
-- `repositories.md`: The repository and commit hash used for the review.
+- `lead_auditors.md`: List of lead auditors who participated during the engagement.
+- `assisting_auditors.md` : List of lead auditors who participated during the engagement.
+- `about_cyfrin.md`: Cyfrin description.
+- `disclaimer.md`: Information about the audit review process.
+- `protocol_summary.md`: Information about the protocol.
 - `additional_comments.md`: For extra information at the end of the report. It is commented by DEFAULT, please change if required.
 - `appendix.md`: For extra information at the end of the report. It is commented by DEFAULT, please change if required.
 

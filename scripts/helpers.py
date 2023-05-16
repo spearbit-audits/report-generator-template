@@ -1,15 +1,23 @@
 import configparser
+from datetime import timedelta
+from dateutil.parser import parse
+import math
 from os.path import exists as check_file
 import re
+import subprocess
 
 # Define file paths
 OUTPUT_PATH = './source/'
 OUTPUT_REPORT = OUTPUT_PATH + 'report.md'
 SEVERITY_COUNTS = OUTPUT_PATH + 'severity_counts.conf'
+SUMMARY_TEX = './templates/summary.tex'
 SUMMARY_INFORMATION = OUTPUT_PATH + 'summary_information.conf'
 
 # Possible severity labels from github issues
-SEVERITY_LABELS = ['Severity: Critical Risk', 'Severity: High Risk', 'Severity: Medium Risk', 'Severity: Low Risk', 'Severity: Gas Optimization', 'Severity: Informational']
+SEVERITY_LABELS = ['Severity: Critical Risk', 'Severity: High Risk', 'Severity: Medium Risk', 'Severity: Low Risk', 'Severity: Informational', 'Severity: Gas Optimization']
+
+# Possible status labels from github issues
+STATUS_LABELS = ['Status: Open', 'Status: Acknowledged', 'Status: Resolved', 'Status: Closed']
 
 # Little helper to get issues with a certain label
 def get_issue_count(dict, label):
@@ -62,23 +70,74 @@ def replace_internal_links(issues, issues_by_number):
     return issues
 
 
+def markdown_heading_to_latex_hypertarget(heading):
+    # Use Pandoc to generate LaTeX with a table of contents
+    markdown = f"# Table of Contents\n\n{heading}"
+    latex = subprocess.check_output(['pandoc', '-f', 'markdown', '-t', 'latex'], input=markdown.encode()).decode()
+    
+    # Extract the hypertarget from the LaTeX
+    hypertarget = ''
+    for line in latex.split('\n'):
+        if '\\hypertarget{table-of-contents}' in line:
+            continue
+        elif '\\hypertarget{' in line:
+            hypertarget = line.strip()
+            break
+
+    hypertarget = re.sub(r'^\\hypertarget{(.*)}{%', r'\1', hypertarget) # Remove the leading "\\hypertarget{" and trailing "}{%"
+    
+    return hypertarget
+
+
+def format_inline_code(text):
+    # Find sections within backticks and wrap them with \texttt{}
+    return re.sub(r'`([^`]+)`', r'\\texttt{\1}', text)
+
+
+def calculate_period(review_timeline):
+    # Extract start and end dates from the review timeline
+    # `dateutil.parser.parse` is used here to parse date strings with ordinal suffixes
+    dates = [parse(date.strip()) for date in review_timeline.split(' - ')]
+    start_date = dates[0]
+    end_date = dates[1]
+
+    # Calculate the number of workdays
+    workdays = 0
+    current_date = start_date
+
+    while current_date <= end_date:
+        # Check if the current date is a weekday (Monday to Friday)
+        if current_date.weekday() < 5:
+            workdays += 1
+        current_date += timedelta(days=1)
+
+    return workdays
+
+
 def get_issues(repository, github):
     """
     get_issues Reads all the issues from the repo configured in config.py and generates a .md file.
 
     A simple script that collects issues from a repo and generate a markdown
     file (report.md). A personal access token will need to be configured. Also the repo name will
-    need to be provided. Add these in `config.py`.
-
-    This code was mostly copied from the compile-issues repo, with some minor tweaks. 
-    I don't take credit for it, but I don't know who the original author is.
+    need to be provided.
     """
+
+    repository = re.sub(r'^https://github.com/(.*).git', r'\1', repository)  # Remove the leading "https://github.com/" and trailing ".git"
+
+    print(repository)
 
     # The dictionary where the issues will be stored, by severity.
     issue_dict : dict[str, list[str]] = {}
 
     # Dictionary for issues by github number, to replace #xx links
     issues_by_number : dict[int, str] = {}
+
+    # Dictionary for count by severity
+    count_by_severity: dict[str, int] = {}
+
+    # Dictionary for summary of findings
+    summary_of_findings: dict[str, list[tuple[str, str]]] = {}
 
     # TODO catch get_repo() 404 errors and produce a gentle suggestion on what's wrong.
     # "GitHub's REST API v3 considers every pull request an issue"--need to filter them out.
@@ -91,13 +150,25 @@ def get_issues(repository, github):
                 # filter issue labels for only severity labels
                 severity_labels_in_issue = [label.name for label in issue.labels if label.name in SEVERITY_LABELS]
 
+                # filter issue labels for only status labels
+                status_labels_in_issue = [label.name for label in issue.labels if label.name in STATUS_LABELS]
+
                 assert len(severity_labels_in_issue) == 1, f"Issue {issue.html_url} has more than one (or no) severity label."
-                label = issue.labels[0].name
-                if label not in issue_dict:
-                    issue_dict[label] = []
-                issue_dict[label].append(f"\n\n### {issue.title}\n\n{issue.body}\n")
+                assert len(status_labels_in_issue) == 1, f"Issue {issue.html_url} has more than one (or no) status label."
+                
+                severity_label = severity_labels_in_issue[0]
+                if severity_label not in issue_dict:
+                    issue_dict[severity_label] = []
+                issue_dict[severity_label].append(f"\n\n### {issue.title}\n\n{issue.body}\n")
+
+                status_label = status_labels_in_issue[0]
+                # Append issue title and status to summary of findings dictionary
+                if severity_label not in summary_of_findings:
+                    summary_of_findings[severity_label] = []
+                summary_of_findings[severity_label].append((issue.title, status_label))
+
     except Exception as e:
-        print(f"I couldn't fetch the issues from repository {repository}.\nError:{e} \n")
+        print(f"Couldn't fetch the issues from repository {repository}.\nError:{e} \n")
         return 0
 
     issue_dict = replace_internal_links(issue_dict, issues_by_number)
@@ -108,9 +179,10 @@ def get_issues(repository, github):
             if get_issue_count(issue_dict, label) == 0:
                 continue
 
-            report.write(f"\n\n## {label[10:]}\n")
+            report.write(f"## {label[10:]}\n")
             for content in issue_dict[label]:
                 report.write(content.replace("\r\n", "\n"))
+            report.write("\n\\clearpage\n")
 
     total_count = 0
     with open(SEVERITY_COUNTS, "w") as counts_file:
@@ -119,8 +191,55 @@ def get_issues(repository, github):
             variable_name = label[10:].lower().replace(" risk", "").replace(" ", "_") + " = "
             count = get_issue_count(issue_dict, label)
             counts_file.write(variable_name + str(count) + '\n')
+            count_by_severity[label] = count
             total_count += count
         counts_file.write('total = ' + str(total_count) + '\n')
+
+    with open(SUMMARY_TEX, "r") as summary_file:
+        summary_tex_content = summary_file.read()
+        
+    summary_findings_table = ""
+    for label in SEVERITY_LABELS:
+        # Do nothing if there are no issues with this label
+        if get_issue_count(issue_dict, label) == 0:
+            continue
+
+        fill = math.ceil(math.log10(count_by_severity[label]))
+        prefix = f"{label[10:11]}-"
+
+        # Iterate through all findings for the current severity
+        for counter, (issue_title, status_label) in enumerate(summary_of_findings[label], start=1):
+            latex_hypertarget = markdown_heading_to_latex_hypertarget("### " + issue_title)
+            prefixed_title = f"\hyperlink{{{latex_hypertarget}}}{{[{prefix}{str(counter).zfill(fill)}] {format_inline_code(issue_title)}}}"
+            status_label = status_label.lstrip("Status: ")
+            summary_findings_table += f"{prefixed_title} & {status_label} \\\\\n\hline"
+
+    # Replace the placeholder in the SUMMARY_TEX file
+    placeholder_start = "% __PLACEHOLDER__SUMMARY_OF_FINDINGS_START"
+    placeholder_end = "% __PLACEHOLDER__SUMMARY_OF_FINDINGS_END"
+
+    if placeholder_start in summary_tex_content and placeholder_end in summary_tex_content:
+        # Find the position of the start and end placeholders
+        start_position = summary_tex_content.index(placeholder_start)
+        end_position = summary_tex_content.index(placeholder_end) + len(placeholder_end)
+
+        # Construct the new content with the updated table
+        new_content = (
+            summary_tex_content[:start_position]
+            + placeholder_start + "\n\hline"
+            + summary_findings_table + "\n"
+            + placeholder_end
+            + summary_tex_content[end_position:]
+        )
+
+        # Replace the table section with the new content in the summary_tex_content
+        updated_summary_tex_content = new_content
+    else:
+        print("Table placeholder not found in summary.tex. Make sure the placeholders are present.")
+        exit(1)
+            
+    with open(SUMMARY_TEX, "w") as summary_file:
+        summary_file.write(updated_summary_tex_content)
 
     return total_count
 

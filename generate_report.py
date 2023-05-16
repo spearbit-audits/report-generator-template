@@ -1,27 +1,32 @@
+import re
 import subprocess
-from sys import stderr
 import scripts.helpers as helpers
 import scripts.linter as linter
+from scripts.fetch_issues import fetch_issues
+
+# Get issues
+fetch_issues()
 
 # Get static info from conf files
 summary_data = helpers.get_summary_information()
 severity_count_data = helpers.get_severity_counts()
 
 # Project name taken from summary_information.conf, inserted in Title section -> title.tex file
-REPLACE_TITLE = [["__PLACEHOLDER__PROJECT_NAME", summary_data['name']]]
+REPLACE_TITLE = [["__PLACEHOLDER__PROJECT_NAME", summary_data['project_name']]]
 
+source_org, repo_name = re.search(r'/(?P<org_name>[^/]+)/([^/.]+)(?:\.git)?$', summary_data['project_github']).groups()
 
 # Information from summary_information.conf, inserted in Summary section -> summary.tex file
-REPLACE_SUMMARY = [["__PLACEHOLDER__REVIEW_LENGTH", summary_data['review_length']],
+REPLACE_SUMMARY = [["__PLACEHOLDER__REVIEW_LENGTH", str(helpers.calculate_period(summary_data['review_timeline']))],
                    ["__PLACEHOLDER__TEAM_NAME", summary_data['team_name']],
                    ["__PLACEHOLDER__TEAM_WEBSITE", summary_data['team_website']],
                    ["__PLACEHOLDER__PROJECT_NAME", summary_data['project_name']],
-                   ["__PLACEHOLDER__PROJECT_WEBSITE", summary_data['project_website']],
-                   ["__PLACEHOLDER__PROJECT_TYPE", summary_data['project_type']],
-                   ["__PLACEHOLDER__REVIEW_TIMELINE", summary_data['review_timeline']],
-                   ["__PLACEHOLDER__REVIEW_METHODS", summary_data['review_methods']],
-                   ["__PLACEHOLDER__DOCUMENTATION", summary_data['documentation']],
-                   ["__PLACEHOLDER__TESTING_COVERAGE", summary_data['testing_coverage']]]
+                   ["__PLACEHOLDER__REPO_LINK", summary_data['project_github']],
+                   ["__PLACEHOLDER__REPO_NAME", repo_name],
+                   ["__PLACEHOLDER__COMMIT_HASH_LINK", re.sub(r'(\.git)?$', '', summary_data['project_github']) + "/blob/" + summary_data['commit_hash']],
+                   ["__PLACEHOLDER__COMMIT_HASH", summary_data['commit_hash']],
+                   ["__PLACEHOLDER__AUDIT_TIMELINE", summary_data['review_timeline']],
+                   ["__PLACEHOLDER__AUDIT_METHODS", summary_data['review_methods']]]
 
 
 # Severities count taken from severity_count.conf, inserted in Total Issues section -> summary.tex file
@@ -29,8 +34,8 @@ REPLACE_SEVERITIES = [["__PLACEHOLDER__ISSUE_CRITICAL_COUNT", severity_count_dat
                       ["__PLACEHOLDER__ISSUE_HIGH_COUNT", severity_count_data['high']],
                       ["__PLACEHOLDER__ISSUE_MEDIUM_COUNT", severity_count_data['medium']],
                       ["__PLACEHOLDER__ISSUE_LOW_COUNT", severity_count_data['low']],
-                      ["__PLACEHOLDER__ISSUE_GAS_OPTIMIZATION_COUNT", severity_count_data['gas_optimization']], 
                       ["__PLACEHOLDER__ISSUE_INFORMATIONAL_COUNT" ,severity_count_data['informational']],
+                      ["__PLACEHOLDER__ISSUE_GAS_OPTIMIZATION_COUNT", severity_count_data['gas_optimization']], 
                       ["__PLACEHOLDER__ISSUE_TOTAL_COUNT", severity_count_data['total']]]
 
 
@@ -38,7 +43,7 @@ REPLACE_SEVERITIES = [["__PLACEHOLDER__ISSUE_CRITICAL_COUNT", severity_count_dat
 # Lint the report.md
 print("Linting the report.md file ...")
 report = helpers.get_file_contents(helpers.OUTPUT_REPORT)
-report = linter.lint(report, summary_data['name'])
+report = linter.lint(report, summary_data['team_name'], source_org, "ChainAccelOrg")
 helpers.save_file_contents(helpers.OUTPUT_REPORT, report)
 print(f"Done.\n")
 

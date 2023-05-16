@@ -1,4 +1,7 @@
-def lint(report, reviewName):
+import re
+
+
+def lint(report, team_name, source_org, internal_org):
 
     # Check for link structures ( format [something](url) ) that don't start with http
     for line in report:
@@ -9,6 +12,17 @@ def lint(report, reviewName):
                 position = report.index(line)
                 print(f"Possible broken link at report.md line {position}: ")
                 print(f"\t{line}")
+            else:
+                # Check for internal organization repo links
+                start_link = pos + 2
+                end_link = line.find(")", start_link)
+                if end_link != -1:
+                    link = line[start_link:end_link]
+                    if re.search(internal_org, link, re.IGNORECASE):
+                        # Replace internal organization link with source repo link (case-insensitive)
+                        new_link = re.sub(internal_org, source_org, link, flags=re.IGNORECASE)
+                        new_line = line[:start_link] + new_link + line[end_link:]
+                        report[report.index(line)] = new_line
             pos = line.find("](", pos+1)
 
     # Check for raw links ("http" string not immediately preceded by a link structure)
@@ -26,12 +40,13 @@ def lint(report, reviewName):
     lineNumber = 0
     for line in report:        
         # If there's a newline, merge the next line with the current one
-        if ((line.startswith("**Severity:**") and len(line) < len("**Severity:**") + 5) or
-            (line.startswith("**Context:**") and len(line) < len("**Context:**") + 5) or
+        if (
             (line.startswith("**Description:**") and len(line) < len("**Description:**") + 5) or
-            (line.startswith("**Spearbit:**") and len(line) < len("**Spearbit:**") + 5) or
-            (line.startswith("**Recommendation:**") and len(line) < len("**Recommendation:**") + 5) or
-            (line.startswith("**" + reviewName + ":**") and len(line) < len("**" + reviewName + ":**") + 5)):
+            (line.startswith("**Impact:**") and len(line) < len("**Impact:**") + 5) or
+            (line.startswith("**Proof of Concept:**") and len(line) < len("**Proof of Concept:**") + 5) or
+            (line.startswith("**Recommended Mitigation:**") and len(line) < len("**Recommended Mitigation:**") + 5) or
+            (line.startswith("**Cyfrin:**") and len(line) < len("**Cyfrin:**") + 5) or
+            (line.startswith("**" + team_name + ":**") and len(line) < len("**" + team_name + ":**") + 5)):
             
             # There might be more than one empty lines following the header, remove them
             while report[lineNumber + 1] == "":

@@ -1,7 +1,23 @@
 import re
 
 
+def replace_org_in_link(line, internal_org, source_org):    
+    # Identify all links
+    links = re.findall('https?://[^\s<>"]+|[^\s<>"]+\.[^\s<>"]+', line)
+
+    for link in links:
+        if re.search(internal_org, link, re.IGNORECASE):
+            # Replace internal organization link with source repo link (case-insensitive)
+            new_link = re.sub(internal_org, source_org, link, flags=re.IGNORECASE)
+            line = line.replace(link, new_link)
+
+    return line
+
+
 def lint(report, team_name, source_org, internal_org):
+    # Replace any internal organization repo links
+    for line in report:
+        report[report.index(line)] = replace_org_in_link(line, internal_org, source_org)
 
     # Check for link structures ( format [something](url) ) that don't start with http
     for line in report:
@@ -12,17 +28,7 @@ def lint(report, team_name, source_org, internal_org):
                 position = report.index(line)
                 print(f"Possible broken link at report.md line {position}: ")
                 print(f"\t{line}")
-            else:
-                # Check for internal organization repo links
-                start_link = pos + 2
-                end_link = line.find(")", start_link)
-                if end_link != -1:
-                    link = line[start_link:end_link]
-                    if re.search(internal_org, link, re.IGNORECASE):
-                        # Replace internal organization link with source repo link (case-insensitive)
-                        new_link = re.sub(internal_org, source_org, link, flags=re.IGNORECASE)
-                        new_line = line[:start_link] + new_link + line[end_link:]
-                        report[report.index(line)] = new_line
+                report[report.index(line)] = replace_org_in_link(line, pos, internal_org, source_org)
             pos = line.find("](", pos+1)
 
     # Check for raw links ("http" string not immediately preceded by a link structure)
@@ -34,6 +40,7 @@ def lint(report, team_name, source_org, internal_org):
                 position = report.index(line)
                 print(f"Possible raw link at report.md line {position}: ")
                 print(f"\t{line}")
+                report[report.index(line)] = replace_org_in_link(line, pos, internal_org, source_org)
             pos = line.find("http", pos+1)
 
     # Check for descriptions not starting in the same line as the headers
@@ -45,7 +52,7 @@ def lint(report, team_name, source_org, internal_org):
             (line.startswith("**Impact:**") and len(line) < len("**Impact:**") + 5) or
             (line.startswith("**Proof of Concept:**") and len(line) < len("**Proof of Concept:**") + 5) or
             (line.startswith("**Recommended Mitigation:**") and len(line) < len("**Recommended Mitigation:**") + 5) or
-            (line.startswith("**Cyfrin:**") and len(line) < len("**Cyfrin:**") + 5) or
+            (line.startswith("**" + internal_org + ":**") and len(line) < len("**" + internal_org +":**") + 5) or
             (line.startswith("**" + team_name + ":**") and len(line) < len("**" + team_name + ":**") + 5)):
             
             # There might be more than one empty lines following the header, remove them

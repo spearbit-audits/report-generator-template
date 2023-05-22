@@ -14,10 +14,25 @@ def replace_org_in_link(line, internal_org, source_org):
     return line
 
 
+def replace_ampersand_in_findings_headings(line):
+    # If the line is a finding markdown heading and contains '&', replace '&' with 'and'
+    if line.strip().startswith('###') and '&' in line:
+        line = line.replace('&', 'and')
+
+    return line
+
+
 def lint(report, team_name, source_org, internal_org):
-    # Replace any internal organization repo links
     for line in report:
-        report[report.index(line)] = replace_org_in_link(line, internal_org, source_org)
+        new_line = line
+        
+        # Replace any internal organization repo links
+        new_line = replace_org_in_link(new_line, internal_org, source_org)
+        
+        # Replace any '&' in finding headings with 'and'
+        new_line = replace_ampersand_in_findings_headings(new_line)
+
+        report[report.index(line)] = new_line
 
     # Check for link structures ( format [something](url) ) that don't start with http
     for line in report:

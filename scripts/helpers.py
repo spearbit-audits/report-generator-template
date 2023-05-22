@@ -123,7 +123,7 @@ def get_issues(repository, github):
     need to be provided.
     """
 
-    repository = re.sub(r'^https://github.com/(.*).git', r'\1', repository)  # Remove the leading "https://github.com/" and trailing ".git"
+    repository = re.sub(r'^https://github.com/(.*?)(\.git)?$', r'\1', repository)  # Remove the leading "https://github.com/" and trailing ".git"
 
     print(repository)
 

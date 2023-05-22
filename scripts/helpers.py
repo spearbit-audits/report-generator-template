@@ -142,7 +142,9 @@ def get_issues(repository, github):
     # TODO catch get_repo() 404 errors and produce a gentle suggestion on what's wrong.
     # "GitHub's REST API v3 considers every pull request an issue"--need to filter them out.
     try:
-        for issue in github.get_repo(repository).get_issues():
+        issues_list = list(github.get_repo(repository).get_issues())
+        for i in range(len(issues_list)-1, -1, -1):
+            issue = issues_list[i]
             if issue.state == 'open' and issue.pull_request is None:
                 # get issue number and title for replacing links
                 issues_by_number[issue.number] = issue.title

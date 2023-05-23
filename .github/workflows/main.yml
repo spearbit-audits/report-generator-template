@@ -30,7 +30,8 @@ on:
 jobs:
   generate-report:
     runs-on: ubuntu-latest
-
+    env:
+      ACCESS_TOKEN: ${{ secrets.ORG_ACCESS_TOKEN }}
     steps:
 
       - name: Initial greeting
@@ -63,7 +64,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           cd ${{ inputs.generator-path }}
           chmod a+x ./scripts/*
-          GITHUB_TOKEN=${{ secrets.ACCESS_TOKEN }} python3 generate_report.py
+          GITHUB_TOKEN=${{ env.ACCESS_TOKEN }} python3 generate_report.py
           
       - name: Get the current date
         id: date

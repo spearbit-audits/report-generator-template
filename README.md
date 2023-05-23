@@ -46,6 +46,12 @@ To fetch the issues from a repository, a [GitHub Personal Access Token](https://
 export GITHUB_TOKEN=your-github-token
 ```
 
+### Docker
+
+For performance reasons, the `blang/latex:ubuntu` image is used in `/scripts/generate.sh` as it provides a minimal LaTeX setup in which run `pdflatex` can be run. This means that report generation can be completed in a single step without having to install Pandoc and LaTeX as dependencies.
+
+Docker is generally pre-installed on GitHub Actions runners but if planning to run this tool locally or on a self-hosted GitHub Actions runner, be sure to have Docker installed and running. If using a self-hosted runner, be sure to have the runner configured to run Docker containers.
+
 ### Edit contents
 
 Check contents and **manually update** the following files in `source/`:

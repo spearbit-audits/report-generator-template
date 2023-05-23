@@ -17,7 +17,7 @@ SUMMARY_INFORMATION = OUTPUT_PATH + 'summary_information.conf'
 SEVERITY_LABELS = ['Severity: Critical Risk', 'Severity: High Risk', 'Severity: Medium Risk', 'Severity: Low Risk', 'Severity: Informational', 'Severity: Gas Optimization']
 
 # Possible status labels from github issues
-STATUS_LABELS = ['Status: Open', 'Status: Acknowledged', 'Status: Resolved', 'Status: Closed']
+STATUS_LABELS = ['Report Status: Open', 'Report Status: Acknowledged', 'Report Status: Resolved', 'Report Status: Closed']
 
 # Little helper to get issues with a certain label
 def get_issue_count(dict, label):
@@ -213,7 +213,7 @@ def get_issues(repository, github):
         for counter, (issue_title, status_label) in enumerate(summary_of_findings[label], start=1):
             latex_hypertarget = markdown_heading_to_latex_hypertarget("### " + issue_title)
             prefixed_title = f"\hyperlink{{{latex_hypertarget}}}{{[{prefix}{str(counter).zfill(fill)}] {format_inline_code(issue_title)}}}"
-            status_label = status_label.lstrip("Status: ")
+            status_label = status_label.lstrip("Report Status: ")
             summary_findings_table += f"{prefixed_title} & {status_label} \\\\\n\hline"
 
     # Replace the placeholder in the SUMMARY_TEX file

@@ -18,9 +18,11 @@ cp -r ./templates/* ./working/
 
 # A temporary work around to have page breaks.
 # FIXME figure out a way to natively do this.
-sed -i '' 's/textbackslash clearpage/clearpage/g' ./working/report.tex
+# On macOS and Linux
+sed -i.bak 's/textbackslash clearpage/clearpage/g' ./working/report.tex
 # On github CI, pandoc seems to be generating the following
-sed -i '' 's/textbackslash{}clearpage/clearpage/g' ./working/report.tex
+sed -i.bak 's/textbackslash{}clearpage/clearpage/g' ./working/report.tex
+rm ./working/report.tex.bak
 
 # Adding Needspaces before subsections and subsubsections
 # Maybe 6cm is not the perfect value here, but it works good enough

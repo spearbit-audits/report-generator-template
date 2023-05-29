@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       time:
-        required: true
+        required: false
         type: string
 
   workflow_dispatch:
@@ -27,13 +27,12 @@ on:
           required: false
           type: string
 
+permissions: read-all
+
 jobs:
   generate-report:
     runs-on: ubuntu-latest
-    env:
-      ACCESS_TOKEN: ${{ secrets.ORG_ACCESS_TOKEN }}
     steps:
-
       - name: Initial greeting
         run: echo "Report generation started, triggered by a ${{ github.event_name }} event."
       
@@ -58,23 +57,44 @@ jobs:
           cd $GITHUB_WORKSPACE
           cd ${{ inputs.generator-path }}
           pip install -r requirements.txt
+
+      - name: Install pandoc
+        run: sudo apt-get install pandoc
           
       - name: Generate the report
         run: |
           cd $GITHUB_WORKSPACE
           cd ${{ inputs.generator-path }}
           chmod a+x ./scripts/*
-          GITHUB_TOKEN=${{ env.ACCESS_TOKEN }} python3 generate_report.py
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} python3 generate_report.py
+          
+      - name: Compile the LaTeX file
+        continue-on-error: true
+        uses: dante-ev/latex-action@latest
+        with:
+          working_directory: ./${{ inputs.generator-path }}/working
+          root_file: main.tex
+          compiler: pdflatex
+          args: -interaction=nonstopmode -shell-escape
+          
+      - name: Compile the LaTeX file (again, for references)
+        continue-on-error: true
+        uses: dante-ev/latex-action@latest
+        with:
+          working_directory: ./${{ inputs.generator-path }}/working
+          root_file: main.tex
+          compiler: pdflatex
+          args: -interaction=nonstopmode -shell-escape
           
       - name: Get the current date
         id: date
-        run: echo "name=date::$(date +'%Y-%m-%d')" >> $GITHUB_STATE
-          
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
       - name: Upload the report PDF
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ (inputs.time == '' && env.DATE || inputs.time) }}-cyfrin-${{ github.event.repository.name }}.pdf
-          path: ./${{ inputs.generator-path }}/output/report.pdf
+          name: ${{ ((inputs.time == '' || inputs.time == null) && env.DATE || inputs.time) }}-cyfrin-${{ github.event.repository.name }}.pdf
+          path: ./${{ inputs.generator-path }}/working/main.pdf
           
       - name: Final greeting, job status
         run: echo "Job finished. Status ${{ job.status }}."

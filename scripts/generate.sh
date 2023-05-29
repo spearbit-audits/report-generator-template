@@ -5,8 +5,8 @@
 
 cd working
 
-docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data blang/latex:ubuntu pdflatex -shell-escape -interaction nonstopmode main.tex
+pdflatex -shell-escape -interaction nonstopmode main.tex
 # Running it a second time to generate references
-docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data blang/latex:ubuntu pdflatex -shell-escape -interaction nonstopmode main.tex
+pdflatex -shell-escape -interaction nonstopmode main.tex
 
-cp /data/main.pdf ../output/report.pdf
+cp main.pdf ../output/report.pdf

@@ -71,6 +71,7 @@ print(f"Done.\n")
 # Generate PDF in output folder
 print("Generating report PDF file ...")
 with open("./working/generation.log", "w") as log:
+    # This is actually repeated by the GitHub Action, but it's useful to have it here for running locally
     subprocess.call("./scripts/generate.sh", stdout=log, stderr=log)
 print(f"\nAll tasks completed. Report should be in the 'output' folder.")
 print(f"If it wasn't generated, check 'working/conversion.log' and 'working/generation.log'.")

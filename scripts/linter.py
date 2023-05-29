@@ -43,7 +43,6 @@ def lint(report, team_name, source_org, internal_org):
                 position = report.index(line)
                 print(f"Possible broken link at report.md line {position}: ")
                 print(f"\t{line}")
-                report[report.index(line)] = replace_org_in_link(line, pos, internal_org, source_org)
             pos = line.find("](", pos+1)
 
     # Check for raw links ("http" string not immediately preceded by a link structure)
@@ -55,7 +54,6 @@ def lint(report, team_name, source_org, internal_org):
                 position = report.index(line)
                 print(f"Possible raw link at report.md line {position}: ")
                 print(f"\t{line}")
-                report[report.index(line)] = replace_org_in_link(line, pos, internal_org, source_org)
             pos = line.find("http", pos+1)
 
     # Check for descriptions not starting in the same line as the headers

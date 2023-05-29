@@ -40,17 +40,11 @@ By default, the script will attempt to fetch issues from the repository given by
 
 ### GitHub Personal Access Token
 
-To fetch the issues from a repository, a [GitHub Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) is required. The `.github/workflows/main.yml` GitHub Action is configured to use an organization secret `ORG_ACCESS_TOKEN` but if planning to run this tool locally, please follow the docs to generate a personal access token and then set it as an environment variable if this functionality is desired:
+To fetch the issues from a repository, a [GitHub Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) is required. The `.github/workflows/main.yml` GitHub Action is configured to use the default GitHub secret `GITHUB_TOKEN` but if planning to run this tool locally, please follow the docs to generate a personal access token and then set it as an environment variable if this functionality is desired:
 
 ```bash
 export GITHUB_TOKEN=your-github-token
 ```
-
-### Docker
-
-For performance reasons, the `blang/latex:ubuntu` image is used in `/scripts/generate.sh` as it provides a minimal LaTeX setup in which run `pdflatex` can be run. This means that report generation can be completed in a single step without having to install Pandoc and LaTeX as dependencies.
-
-Docker is generally pre-installed on GitHub Actions runners but if planning to run this tool locally or on a self-hosted GitHub Actions runner, be sure to have Docker installed and running. If using a self-hosted runner, be sure to have the runner configured to run Docker containers.
 
 ### Edit contents
 

@@ -211,7 +211,7 @@ def get_issues(repository, github):
         for counter, (issue_title, status_label) in enumerate(summary_of_findings[label], start=1):
             latex_hypertarget = markdown_heading_to_latex_hypertarget("### " + issue_title)
             prefixed_title = f"\hyperlink{{{latex_hypertarget}}}{{[{prefix}{str(counter).zfill(fill)}] {format_inline_code(issue_title)}}}"
-            status_label = status_label.lstrip("Report Status: ")
+            status_label = status_label.replace("Report Status: ", "")
             summary_findings_table += f"{prefixed_title} & {status_label} \\\\\n\hline"
 
     # Replace the placeholder in the SUMMARY_TEX file

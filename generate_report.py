@@ -12,7 +12,8 @@ summary_data = helpers.get_summary_information()
 severity_count_data = helpers.get_severity_counts()
 
 # Project name taken from summary_information.conf, inserted in Title section -> title.tex file
-REPLACE_TITLE = [["__PLACEHOLDER__PROJECT_NAME", summary_data['project_name']]]
+REPLACE_TITLE = [["__PLACEHOLDER__PROJECT_NAME", summary_data['project_name']],
+                 ["__PLACEHOLDER__REPORT_VERSION", summary_data['report_version']]]
 
 source_org, repo_name = re.search(r'/(?P<org_name>[^/]+)/([^/.]+)(?:\.git)?$', summary_data['project_github']).groups()
 

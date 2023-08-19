@@ -69,19 +69,20 @@ def lint(report, team_name, source_org, internal_org):
             (line.startswith("**" + team_name + ":**") and len(line) < len("**" + team_name + ":**") + 5)):
             
             # There might be more than one empty lines following the header, remove them
-            while report[lineNumber + 1] == "":
+            while lineNumber + 1 < len(report) and report[lineNumber + 1] == "":
                 del report[lineNumber + 1]
 
-            nextLine = report[lineNumber + 1]
-            # If it's a list, code or quote, don't merge
-            if (not nextLine.lstrip().startswith("-") and 
-                not nextLine.lstrip().startswith("1.") and 
-                not nextLine.lstrip().startswith("```") and
-                not nextLine.lstrip().startswith("#") and
-                not nextLine.lstrip().startswith(">")): 
-                
-                report[lineNumber] = line + " " + nextLine.lstrip()
-                del report[lineNumber + 1]
+            if lineNumber + 1 < len(report):
+                nextLine = report[lineNumber + 1]
+                # If it's a list, code or quote, don't merge
+                if (not nextLine.lstrip().startswith("-") and
+                    not nextLine.lstrip().startswith("1.") and
+                    not nextLine.lstrip().startswith("```") and
+                    not nextLine.lstrip().startswith("#") and
+                    not nextLine.lstrip().startswith(">")):
+
+                    report[lineNumber] = line + " " + nextLine.lstrip()
+                    del report[lineNumber + 1]
 
         lineNumber = lineNumber + 1
 

@@ -23,6 +23,10 @@ There are five directories:
 
 ## Usage
 
+### Pre-requisites
+1. [Pandoc](https://pandoc.org/)
+2. [LaTeX](https://www.latex-project.org/get/).
+
 ### Install from source
 
 Clone this repository and install dependencies:
